@@ -1,0 +1,24 @@
+---
+- name: Copy cleanup_script.ps1 to the target host
+  copy:
+    src: cleanup_script.ps1
+    dest: C:\cleanup_script.ps1
+    mode: 'u=rwx,g=r,o=r'
+
+- name: Copy freq.txt to the target host
+  copy:
+    src: freq.txt
+    dest: C:\freq.txt
+    mode: 'u=rw,g=r,o=r'
+
+- name: Run the Cleanup Script on the target host
+  win_shell: |
+    # PowerShell script execution (as previously shown in the response)
+  register: script_output
+  changed_when: false
+  args:
+    chdir: C:\
+
+- name: Display the script output
+  debug:
+    var: script_output.stdout_lines

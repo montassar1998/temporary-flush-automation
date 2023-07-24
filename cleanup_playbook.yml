@@ -1,0 +1,28 @@
+---
+- name: Run Cleanup Script on Windows and Linux Hosts
+  hosts: all_hosts
+  gather_facts: false
+  tasks:
+    - name: Grant "Log on as a batch job" right for the current user
+      win_user_right:
+        user: "{{ ansible_user }}"
+        right: SeBatchLogonRight
+        state: present
+      become: yes
+      vars:
+        ansible_become_pass: "{{ admin_password }}"
+
+    - name: Copy cleanup_script.sh to Linux hosts
+      copy:
+        src: roles/cron-linux/files/cleanup_script.sh
+        dest: /usr/local/bin/cleanup_script.sh
+        mode: 'u=rwx,g=r,o=r'
+
+    - name: Schedule the cleanup task using cron on Linux hosts
+      cron:
+        name: Cleanup Task
+        job: "/usr/local/bin/cleanup_script.sh"
+        minute: "0"
+        hour: "10"  # Adjust the desired hour (0-23) for the cleanup task
+        user: root
+        state: present
